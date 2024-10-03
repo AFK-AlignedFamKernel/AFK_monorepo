@@ -1,32 +1,34 @@
 // Hooks
-import {useEffect, useMemo, useState} from 'react';
-import {useWindowDimensions} from 'react-native';
-import {useStyles, useTheme} from '../hooks';
-
 // Navigation Components
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {NavigationContainer, useNavigation, useRoute} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {useEffect, useMemo, useState} from 'react';
+import {useWindowDimensions} from 'react-native';
+// Components
+import {View} from 'react-native';
+// Styles
+import {StyleSheet} from 'react-native';
 
+import {Icon} from '../components';
+// Icons
+import {IconNames} from '../components/Icon';
+import {Navbar} from '../components/Navbar';
+import {useStyles, useTheme} from '../hooks';
 // Modules and Layout
 import GroupChatDetail from '../modules/Group/groupDetail/GroupChatDetail';
 import GroupChatGroupRequest from '../modules/Group/memberAction/ViewRequest';
 import GroupChat from '../modules/Group/message/GroupMessage';
 import AuthSidebar from '../modules/Layout/auth-sidebar';
-import Sidebar from '../modules/Layout/sidebar';
 import RightSidebar from '../modules/Layout/RightSideBar';
-
-// Components
-import {View} from 'react-native';
-import {Icon} from '../components';
-import {Navbar} from '../components/Navbar';
-
+import Sidebar from '../modules/Layout/sidebar';
 // Screens
 import {CreateAccount} from '../screens/Auth/CreateAccount';
 import {ImportKeys} from '../screens/Auth/ImportKeys';
 import {Login} from '../screens/Auth/Login';
 import {SaveKeys} from '../screens/Auth/SaveKeys';
+import {CashuScreen} from '../screens/Cashu';
 import {ChannelDetail} from '../screens/ChannelDetail';
 import {ChannelsFeed} from '../screens/ChannelsFeed';
 import {CreateChannel} from '../screens/CreateChannel';
@@ -43,19 +45,11 @@ import {Profile} from '../screens/Profile';
 import {Search} from '../screens/Search';
 import {Settings} from '../screens/Settings';
 import {Tips} from '../screens/Tips';
-import {CashuScreen} from '../screens/Cashu';
 import {WalletBTC} from '../screens/Wallet';
-
-// Styles
-import {StyleSheet} from 'react-native';
 import {ThemedStyleSheet} from '../styles';
-
 // Utilities
 import {AuthStackParams, HomeBottomStackParams, MainStackParams, RootStackParams} from '../types';
 import {retrievePublicKey} from '../utils/storage';
-
-// Icons
-import {IconNames} from '../components/Icon';
 
 type TabBarIconProps = {
   focused: boolean;

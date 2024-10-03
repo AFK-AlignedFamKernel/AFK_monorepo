@@ -1,33 +1,28 @@
 import '../../../applyGlobalPolyfills';
 
-import { webln } from '@getalby/sdk';
-import { useAuth, useCashu, useCashuStore, useSendZap } from 'afk_nostr_sdk';
-import * as Clipboard from 'expo-clipboard';
-import React, { SetStateAction, useEffect, useRef, useState } from 'react';
-import { Platform, Pressable, SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native';
-import { ActivityIndicator, Modal, Text, TextInput } from 'react-native';
-import { WebView } from 'react-native-webview';
+import {MintQuoteResponse} from '@cashu/cashu-ts';
+import {useCashu, useCashuStore} from 'afk_nostr_sdk';
+import {canUseBiometricAuthentication} from 'expo-secure-store';
+import React, {SetStateAction, useEffect, useRef, useState} from 'react';
+import {Platform, Pressable, SafeAreaView, ScrollView, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Modal, Text, TextInput} from 'react-native';
 import PolyfillCrypto from 'react-native-webview-crypto';
 
-import { Button, IconButton, Input, Modalize } from '../../components';
-import { useStyles, useTheme } from '../../hooks';
-import { useDialog, useToast } from '../../hooks/modals';
-import stylesheet from './styles';
-import { MintQuoteResponse } from '@cashu/cashu-ts';
-import { CopyIconStack } from '../../assets/icons';
-import { canUseBiometricAuthentication } from 'expo-secure-store';
-import { retrieveAndDecryptCashuMnemonic, retrievePassword, storeCashuMnemonic } from '../../utils/storage';
+import {Button, IconButton, Modalize} from '../../components';
 import TabSelector from '../../components/TabSelector';
-import { SelectedTab, TABS_CASHU } from '../../types/tab';
-import { GenerateInvoiceCashu } from './GenerateInvoiceCashu';
-import { BalanceCashu } from './BalanceCashu';
-import { MnemonicCashu } from './MnemonicCashu';
-import { InvoicesListCashu } from './InvoicesListCashu';
-import { MintListCashu } from './MintListCashu';
-import { useModal } from '../../hooks/modals/useModal';
-import { ReceiveEcash } from './ReceiveEcash';
-import { SendEcash } from './SendEcash';
-import { HistoryTxCashu } from './HistoryTxCashu';
+import {useStyles, useTheme} from '../../hooks';
+import {useDialog, useToast} from '../../hooks/modals';
+import {useModal} from '../../hooks/modals/useModal';
+import {SelectedTab, TABS_CASHU} from '../../types/tab';
+import {retrieveAndDecryptCashuMnemonic, retrievePassword} from '../../utils/storage';
+import {BalanceCashu} from './BalanceCashu';
+import {HistoryTxCashu} from './HistoryTxCashu';
+import {InvoicesListCashu} from './InvoicesListCashu';
+import {MintListCashu} from './MintListCashu';
+import {MnemonicCashu} from './MnemonicCashu';
+import {ReceiveEcash} from './ReceiveEcash';
+import {SendEcash} from './SendEcash';
+import stylesheet from './styles';
 
 // Get Lighting Address:
 // const lightningAddress = new LightningAddress('hello@getalby.com');
@@ -51,8 +46,9 @@ export const CashuWalletView: React.FC = () => {
 };
 
 export const CashuView = () => {
-
-  const { wallet, connectCashMint,
+  const {
+    wallet,
+    connectCashMint,
     connectCashWallet,
     requestMintQuote,
     generateMnemonic,
@@ -60,39 +56,34 @@ export const CashuView = () => {
     mint,
     mintUrl,
     setMintUrl,
+    getMintInfo,
     setMintInfo,
-    getMintInfo
+  } = useCashu();
 
+  const {setMnemonic} = useCashuStore();
 
-  } = useCashu()
-
-
-  const { setMnemonic, } = useCashuStore()
-
-  const { isSeedCashuStorage, setIsSeedCashuStorage } = useCashuStore()
+  const {isSeedCashuStorage, setIsSeedCashuStorage} = useCashuStore();
 
   useEffect(() => {
-
     (async () => {
       const biometrySupported = Platform.OS !== 'web' && canUseBiometricAuthentication?.();
 
       if (biometrySupported) {
-        const password = await retrievePassword()
+        const password = await retrievePassword();
         if (!password) return;
         const storeMnemonic = await retrieveAndDecryptCashuMnemonic(password);
 
         if (!storeMnemonic) {
           return;
         }
-        if (storeMnemonic) setHasSeedCashu(true)
-
+        if (storeMnemonic) setHasSeedCashu(true);
 
         const decoder = new TextDecoder();
         // const decryptedPrivateKey = decoder.decode(Buffer.from(storeMnemonic).toString("hex"));
-        const decryptedPrivateKey = Buffer.from(storeMnemonic).toString("hex");
-        setMnemonic(decryptedPrivateKey)
+        const decryptedPrivateKey = Buffer.from(storeMnemonic).toString('hex');
+        setMnemonic(decryptedPrivateKey);
 
-        if (isSeedCashuStorage) setHasSeedCashu(true)
+        if (isSeedCashuStorage) setHasSeedCashu(true);
       }
     })();
   }, []);
@@ -100,31 +91,29 @@ export const CashuView = () => {
   useEffect(() => {
     (async () => {
       if (!mintUrl) return;
-      const info = await getMintInfo(mintUrl)
-      setMintInfo(info)
+      const info = await getMintInfo(mintUrl);
+      setMintInfo(info);
     })();
-
-    
   }, [mintUrl]);
   const styles = useStyles(stylesheet);
   // const [mintUrl, setMintUrl] = useState<string | undefined>("https://mint.minibits.cash/Bitcoin")
-  const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
+  const [quote, setQuote] = useState<MintQuoteResponse | undefined>();
   const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
   const [isZapModalVisible, setIsZapModalVisible] = useState(false);
   const [hasSeedCashu, setHasSeedCashu] = useState(false);
 
-  const { show } = useModal()
+  const {show} = useModal();
 
   const [isLoading, setIsLoading] = useState(false);
   const [zapAmount, setZapAmount] = useState('');
   const [zapRecipient, setZapRecipient] = useState('');
   const [invoiceAmount, setInvoiceAmount] = useState('');
   const [invoiceMemo, setInvoiceMemo] = useState('');
-  const { theme } = useTheme();
-  const [newSeed, setNewSeed] = useState<string | undefined>()
+  const {theme} = useTheme();
+  const [newSeed, setNewSeed] = useState<string | undefined>();
 
-  const { showDialog, hideDialog } = useDialog()
-  const { showToast } = useToast()
+  const {showDialog, hideDialog} = useDialog();
+  const {showToast} = useToast();
 
   const [selectedTab, setSelectedTab] = useState<SelectedTab | undefined>(SelectedTab.CASHU_WALLET);
 
@@ -141,23 +130,22 @@ export const CashuView = () => {
     sendModalizeRef.current?.close();
 
     sendModalizeRef.current?.open();
-    show((
+    show(
       <>
         <SendEcash></SendEcash>
-      </>
-    ))
+      </>,
+    );
   };
-
 
   const onOpenReceiveModal = () => {
     sendModalizeRef.current?.close();
 
     sendModalizeRef.current?.open();
-    show((
+    show(
       <>
         <ReceiveEcash></ReceiveEcash>
-      </>
-    ))
+      </>,
+    );
   };
   const handleZap = async () => {
     if (!zapAmount || !zapRecipient) return;
@@ -180,7 +168,6 @@ export const CashuView = () => {
   //   if (!mintUrl || !invoiceAmount) return;
   //   try {
 
-
   //     // const cashuMint = await connectCashMint(mintUrl)
   //     // const wallet = await connectCashWallet(cashuMint?.mint)
 
@@ -196,38 +183,19 @@ export const CashuView = () => {
   //   }
   // };
 
-
-
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-
-
-
-
         <ScrollView contentContainerStyle={styles.scrollView}>
-
-          {selectedTab == SelectedTab?.CASHU_WALLET &&
-            <>
-              {/* <GenerateInvoiceCashu></GenerateInvoiceCashu> */}
-            </>
-          }
+          {selectedTab == SelectedTab?.CASHU_WALLET && (
+            <>{/* <GenerateInvoiceCashu></GenerateInvoiceCashu> */}</>
+          )}
           <BalanceCashu></BalanceCashu>
 
-
           <View style={styles.tabSelector}>
+            <Button onPress={onOpenSendModal}>Send</Button>
 
-            <Button
-              onPress={onOpenSendModal}
-            >
-              Send
-            </Button>
-
-            <Button
-              onPress={onOpenReceiveModal}
-            >
-              Receive
-            </Button>
+            <Button onPress={onOpenReceiveModal}>Receive</Button>
             {/* 
 <Modalize ref={sendModalizeRef}>
   <Modal
@@ -240,7 +208,7 @@ export const CashuView = () => {
 </Modalize> */}
 
             <Modal
-              style={{ zIndex: 10 }}
+              style={{zIndex: 10}}
               animationType="slide"
               transparent={true}
               visible={isZapModalVisible}
@@ -262,10 +230,8 @@ export const CashuView = () => {
               transparent={true}
               visible={isInvoiceModalVisible}
               onRequestClose={() => setIsInvoiceModalVisible(false)}
-              style={{ zIndex: 10 }}
-
+              style={{zIndex: 10}}
             >
-
               {/* <PayInfo
     setInvoiceMemo={setInvoiceMemo}
     setInvoiceAmount={setInvoiceAmount}
@@ -285,48 +251,43 @@ export const CashuView = () => {
             addScreenNavigation={false}
           ></TabSelector>
 
-          {selectedTab == SelectedTab?.CASHU_INVOICES &&
+          {selectedTab == SelectedTab?.CASHU_INVOICES && (
             <View>
               <Text style={styles.text}>Invoices</Text>
               <InvoicesListCashu></InvoicesListCashu>
             </View>
-          }
+          )}
 
-          {selectedTab == SelectedTab?.CASHU_HISTORY &&
+          {selectedTab == SelectedTab?.CASHU_HISTORY && (
             <View>
               <Text>History</Text>
               <HistoryTxCashu></HistoryTxCashu>
-
-
             </View>
-          }
+          )}
 
-          {selectedTab == SelectedTab?.CASHU_MINT &&
+          {selectedTab == SelectedTab?.CASHU_MINT && (
             <View>
               <Text>Cashu mints</Text>
               <MintListCashu></MintListCashu>
             </View>
-          }
+          )}
 
-          {selectedTab == SelectedTab.CASHU_SETTINGS &&
-
+          {selectedTab == SelectedTab.CASHU_SETTINGS && (
             <View>
-
               <TouchableOpacity
                 onPress={() => {
-                  connectCashWallet(mint,)
+                  connectCashWallet(mint);
                 }}
-              >Connect Cashu</TouchableOpacity>
+              >
+                Connect Cashu
+              </TouchableOpacity>
 
               <MnemonicCashu></MnemonicCashu>
-
             </View>
-          }
-
+          )}
         </ScrollView>
       </SafeAreaView>
     </View>
-
   );
 };
 
@@ -377,7 +338,7 @@ function WalletInfo({
       {paymentRequest ? (
         <View style={styles.paymentSection}>
           <View style={styles.paymentRequest}>
-            <Text style={{ ...styles.paymentRequestLabel, fontWeight: 'bold' }}>
+            <Text style={{...styles.paymentRequestLabel, fontWeight: 'bold'}}>
               Payment Request:
             </Text>
 
@@ -406,7 +367,7 @@ function WalletInfo({
         <Text style={styles.buttonText}>Receive Payment</Text>
       </Pressable>
 
-      <View style={{ marginTop: 10, ...styles.zapSection }}>
+      <View style={{marginTop: 10, ...styles.zapSection}}>
         <Pressable style={styles.zapButton} onPress={() => setIsZapModalVisible(true)}>
           <Text style={styles.buttonText}>Zap a User</Text>
         </Pressable>
@@ -414,7 +375,6 @@ function WalletInfo({
     </View>
   );
 }
-
 
 function ZapUserView({
   isLoading,
@@ -469,7 +429,6 @@ function ZapUserView({
     </View>
   );
 }
-
 
 function PayInfo({
   setIsInvoiceModalVisible,

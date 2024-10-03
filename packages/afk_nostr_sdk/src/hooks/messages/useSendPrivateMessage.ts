@@ -32,9 +32,14 @@ export const useSendPrivateMessage = () => {
       encryptedMessage?: string;
     }) => {
       const senderName = (await getUser(ndk, publicKey))?.nip05 || 'AFK ANON';
-      const receiverName = (await getUser(ndk, data.receiverPublicKeyProps))?.nip05 || 'AFK ANON';
+      const receiverName =
+        (await getUser(ndk, data.receiverPublicKeyProps || ''))?.nip05 || 'AFK ANON';
 
       const {relayUrl, receiverPublicKeyProps, isEncrypted, tags, encryptedMessage, content} = data;
+
+      if (!receiverPublicKeyProps) {
+        return;
+      }
 
       // let receiverPublicKey = fixPubKey(stringToHex(receiverPublicKeyProps))
       const receiverPublicKey = fixPubKey(receiverPublicKeyProps);

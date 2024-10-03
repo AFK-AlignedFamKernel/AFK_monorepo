@@ -1,46 +1,33 @@
-import { useAuth, useNip07Extension, useNostrContext } from 'afk_nostr_sdk';
-import {ColorProp, ThemeColorNames} from '../styles';
-import {useTheme} from './useTheme';
-import { useMemo } from 'react';
-import { useDialog } from './modals';
-import { MainStackNavigationProps } from '../types';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
+import {useAuth, useNip07Extension, useNostrContext} from 'afk_nostr_sdk';
+import {useMemo} from 'react';
 
+import {MainStackNavigationProps} from '../types';
+import {useDialog} from './modals';
 
 export const useNostrAuth = () => {
-  
-
-
-  const {publicKey} = useAuth()
-  const {ndk} = useNostrContext()
-  const {showDialog, hideDialog} = useDialog()
+  const {publicKey} = useAuth();
+  const {ndk} = useNostrContext();
+  const {showDialog, hideDialog} = useDialog();
   const {getPublicKey} = useNip07Extension();
   const navigationMain = useNavigation<MainStackNavigationProps>();
 
-
   const isNostrConnected = useMemo(() => {
-
-    return publicKey ? true : false
-  },[])
-
+    return publicKey ? true : false;
+  }, []);
 
   const handleCheckNostrAndSendConnectDialog = async () => {
-    
-    if(!isNostrConnected) {
-      handleGoLogin()
-      
+    if (!isNostrConnected) {
+      handleGoLogin();
     }
 
-    return isNostrConnected
-  }
-
-
+    return isNostrConnected;
+  };
 
   const handleGoLogin = () => {
     showDialog({
-      title: "Login your Nostr accounts",
-      description:
-        'Go to Nostr login page.',
+      title: 'Login your Nostr accounts',
+      description: 'Go to Nostr login page.',
       buttons: [
         {
           type: 'primary',
@@ -74,9 +61,6 @@ export const useNostrAuth = () => {
     });
   };
 
-
-
-
   const handleExtensionConnect = () => {
     showDialog({
       title: 'WARNING',
@@ -96,12 +80,11 @@ export const useNostrAuth = () => {
     });
   };
 
-
   return {
     isNostrConnected,
     handleCheckNostrAndSendConnectDialog,
     handleCreateNostrAccount,
     handleExtensionConnect,
-    handleGoLogin
-  }
+    handleGoLogin,
+  };
 };

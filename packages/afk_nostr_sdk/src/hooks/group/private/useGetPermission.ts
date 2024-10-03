@@ -1,4 +1,4 @@
-import NDK, {NDKEvent} from '@nostr-dev-kit/ndk';
+import NDK, {NDKEvent, NDKKind} from '@nostr-dev-kit/ndk';
 import {useQuery} from '@tanstack/react-query';
 
 import {useNostrContext} from '../../../context/NostrContext';
@@ -34,7 +34,9 @@ export const fetchPermissions = async ({
 
   if (!events || events.size === 0) return null;
 
-  const sortedEvents = [...events].sort((a, b) => b.created_at - a.created_at);
+  const sortedEvents = [...events].sort((a, b) =>
+    b.created_at && a.created_at ? b.created_at - a.created_at : 0,
+  );
 
   // Return the latest event
   return sortedEvents[0];
@@ -85,7 +87,7 @@ export const useGetGroupPermission = (groupId: string) => {
     enabled: !!groupId,
     queryFn: async () => {
       const events = await ndk.fetchEvents({
-        kinds: [9003],
+        kinds: [9003 as NDKKind],
         '#h': [groupId],
         '#p': [publicKey],
       });
@@ -93,7 +95,9 @@ export const useGetGroupPermission = (groupId: string) => {
       if (!events || events.size === 0) return [];
 
       // Sort events by creation time (descending) to get the latest
-      const sortedEvents = [...events].sort((a, b) => b.created_at - a.created_at);
+      const sortedEvents = [...events].sort((a, b) =>
+        b.created_at && a.created_at ? b.created_at - a.created_at : 0,
+      );
 
       // Get the latest event
       const latestEvent = sortedEvents[0];
